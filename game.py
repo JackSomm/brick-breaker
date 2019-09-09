@@ -22,7 +22,7 @@ class Rect(pygame.sprite.Sprite):
 
 
 class Ball(pygame.sprite.Sprite):
-  """ This class is the ball that breaks blocks and bounces off the player class """
+  """ This class is the ball that breaks rectangles and bounces off the player class """
   def __init__(self):
     super(Ball, self).__init__()
     self.width, self.height = 15, 15
@@ -54,18 +54,18 @@ class Ball(pygame.sprite.Sprite):
 
     # Do we bounce off the top of the screen?
     if self.y <= 0:
-        self.bounce(0)
-        self.y = 1
+      self.bounce(0)
+      self.y = 1
 
     # Do we bounce off the left of the screen?
     if self.x <= 0:
-        self.direction = (360 - self.direction) % 360
-        self.x = 1
+      self.direction = (360 - self.direction) % 360
+      self.x = 1
 
     # Do we bounce of the right side of the screen?
     if self.x > self.screen_width - self.width:
-        self.direction = (360 - self.direction) % 360
-        self.x = self.screen_width - self.width - 1
+      self.direction = (360 - self.direction) % 360
+      self.x = self.screen_width - self.width - 1
 
 class Player(pygame.sprite.Sprite):
   """ This class is the bar at the bottom of the screen that the player controls """
@@ -135,12 +135,15 @@ while 1:
     diff = (player.rect.x + player.width / 2) - (ball.rect.x + ball.width / 2)
     ball.bounce(diff)
 
-  dead_blocks = pygame.sprite.spritecollide(ball, rects, True)
+  dead_rects = pygame.sprite.spritecollide(ball, rects, True)
 
-  if len(dead_blocks) > 0:
+  if len(dead_rects) > 0:
     ball.bounce(0)
-  if len(rects) == 0 or ball.y == 600:
+  if len(rects) == 0 or ball.y >= 600:
     game_over = True
+
+  for rect in dead_rects:
+    ball.speed += 0.001
 
   allsprites.draw(SCREEN)
   pygame.display.flip()
