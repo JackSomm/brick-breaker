@@ -29,8 +29,43 @@ class Ball(pygame.sprite.Sprite):
     self.image = pygame.Surface([self.width, self.height])
     self.rect = self.image.get_rect()
     self.image.fill(WHITE)
-    self.rect.x = pygame.display.get_surface().get_width() / 2 - 15 / 2
-    self.rect.y = pygame.display.get_surface().get_height() - 47
+    self.screen_width = pygame.display.get_surface().get_width()
+    self.screen_height = pygame.display.get_surface().get_height()
+    self.x = self.screen_width / 2 - 15 / 2
+    self.y = self.screen_height - 47
+    self.speed = 0.5
+    self.direction = 200
+
+  def bounce(self, diff):
+    """ This function will bounce the ball
+        off a horizontal surface (not a vertical one) """
+
+    self.direction = (180 - self.direction) % 360
+    self.direction -= diff
+
+  def update(self):
+    direction_radians = math.radians(self.direction)
+    self.x += self.speed * math.sin(direction_radians)
+    self.y -= self.speed * math.cos(direction_radians)
+
+    # Move the image to where our x and y are
+    self.rect.x = self.x
+    self.rect.y = self.y
+
+    # Do we bounce off the top of the screen?
+    if self.y <= 0:
+        self.bounce(0)
+        self.y = 1
+
+    # Do we bounce off the left of the screen?
+    if self.x <= 0:
+        self.direction = (360 - self.direction) % 360
+        self.x = 1
+
+    # Do we bounce of the right side of the screen?
+    if self.x > self.screen_width - self.width:
+        self.direction = (360 - self.direction) % 360
+        self.x = self.screen_width - self.width - 1
 
 class Player(pygame.sprite.Sprite):
   """ This class is the bar at the bottom of the screen that the player controls """
@@ -46,6 +81,12 @@ class Player(pygame.sprite.Sprite):
     self.rect.x = (self.screen_width / 2) - 50
     self.rect.y = self.screen_height - 30
 
+  def update(self):
+    if pygame.key.get_pressed()[pygame.K_LEFT] and self.rect.x != 0:
+      self.rect.x -= SPEED[0]
+    if pygame.key.get_pressed()[pygame.K_RIGHT] and self.rect.x != 800 - self.width:
+     self.rect.x += SPEED[0]  
+
 
 clock = pygame.time.Clock()
 # Sprite group for rectangles
@@ -53,12 +94,15 @@ rects = pygame.sprite.Group()
 # Initialize player
 player = Player()
 # Initialize ball
+balls = pygame.sprite.Group()
 ball = Ball()
-
+balls.add(ball)
 # Group to render all sprites
 allsprites = pygame.sprite.Group()
 allsprites.add(player)
 allsprites.add(ball)
+
+font = pygame.font.Font(None, 36)
 
 # Create the rectangles to be rendered
 for row in range(16):
@@ -68,27 +112,35 @@ for row in range(16):
     allsprites.add(rect)
   top += RECT_HEIGHT + 2
 
+game_over = False
 
+while 1:
 
-def main():
+  SCREEN.fill(BLACK)
+  
+  for event in pygame.event.get():
+    if event.type == pygame.QUIT: sys.exit()
 
-  while 1:
-    
-    if ball.rect.y == 0:
-      ball.rect.y += 0.5
+  if not game_over:
+    ball.update()
+    player.update()
 
-    for event in pygame.event.get():
-      if event.type == pygame.QUIT: sys.exit()
+  if game_over:
+    text = font.render("Game Over!", True, WHITE)
+    text_pos = text.get_rect(centerx=800/2)
+    text_pos.top = 300
+    SCREEN.blit(text, text_pos)
 
-    SCREEN.fill(BLACK)
-    allsprites.draw(SCREEN)
+  if pygame.sprite.spritecollide(player, balls, False):
+    diff = (player.rect.x + player.width / 2) - (ball.rect.x + ball.width / 2)
+    ball.bounce(diff)
 
-    # Player movement
-    if pygame.key.get_pressed()[pygame.K_LEFT] and player.rect.x != 0:
-      player.rect.x -= SPEED[0]
-    if pygame.key.get_pressed()[pygame.K_RIGHT] and player.rect.x != 800 - player.width:
-      player.rect.x += SPEED[0]
+  dead_blocks = pygame.sprite.spritecollide(ball, rects, True)
 
-    pygame.display.flip()
+  if len(dead_blocks) > 0:
+    ball.bounce(0)
+  if len(rects) == 0 or ball.y == 600:
+    game_over = True
 
-main()
+  allsprites.draw(SCREEN)
+  pygame.display.flip()
