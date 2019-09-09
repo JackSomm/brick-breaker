@@ -34,7 +34,7 @@ class Ball(pygame.sprite.Sprite):
     self.x = self.screen_width / 2 - 15 / 2
     self.y = self.screen_height - 47
     self.speed = 0.5
-    self.direction = 200
+    self.direction = 0
 
   def bounce(self, diff):
     """ This function will bounce the ball
@@ -44,6 +44,7 @@ class Ball(pygame.sprite.Sprite):
     self.direction -= diff
 
   def update(self):
+    # Determine speed and direction of ball movement
     direction_radians = math.radians(self.direction)
     self.x += self.speed * math.sin(direction_radians)
     self.y -= self.speed * math.cos(direction_radians)
@@ -88,20 +89,23 @@ class Player(pygame.sprite.Sprite):
      self.rect.x += SPEED[0]  
 
 
-clock = pygame.time.Clock()
 # Sprite group for rectangles
 rects = pygame.sprite.Group()
+
 # Initialize player
 player = Player()
+
 # Initialize ball
 balls = pygame.sprite.Group()
 ball = Ball()
 balls.add(ball)
+
 # Group to render all sprites
 allsprites = pygame.sprite.Group()
 allsprites.add(player)
 allsprites.add(ball)
 
+# Font for game messages
 font = pygame.font.Font(None, 36)
 
 # Create the rectangles to be rendered
@@ -121,27 +125,34 @@ while 1:
   for event in pygame.event.get():
     if event.type == pygame.QUIT: sys.exit()
 
+  # While game isn't over update player and ball position
   if not game_over:
     ball.update()
     player.update()
 
+  # If game is over render "Game Over"
   if game_over:
     text = font.render("Game Over!", True, WHITE)
     text_pos = text.get_rect(centerx=800/2)
     text_pos.top = 300
     SCREEN.blit(text, text_pos)
 
+  # If ball collides with player change the direction, takes into account left and right sides for diagonal movement
   if pygame.sprite.spritecollide(player, balls, False):
     diff = (player.rect.x + player.width / 2) - (ball.rect.x + ball.width / 2)
     ball.bounce(diff)
 
+  # Add rects that ball collides with to new group
   dead_rects = pygame.sprite.spritecollide(ball, rects, True)
 
+  # Keep moving ball as long as there are rects
   if len(dead_rects) > 0:
     ball.bounce(0)
+  # End game if rects are 0 or if ball falls off bottom of screen
   if len(rects) == 0 or ball.y >= 600:
     game_over = True
 
+  # Increase speed of ball as more rects get hit for difficulty
   for rect in dead_rects:
     ball.speed += 0.001
 
