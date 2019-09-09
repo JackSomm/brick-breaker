@@ -1,4 +1,4 @@
-import sys, pygame
+import sys, pygame, math
 pygame.init()
 
 RED = 255, 0, 0
@@ -20,11 +20,23 @@ class Rect(pygame.sprite.Sprite):
     self.rect.x = x
     self.rect.y = y
 
+
+class Ball(pygame.sprite.Sprite):
+  """ This class is the ball that breaks blocks and bounces off the player class """
+  def __init__(self):
+    super(Ball, self).__init__()
+    self.width, self.height = 15, 15
+    self.image = pygame.Surface([self.width, self.height])
+    self.rect = self.image.get_rect()
+    self.image.fill(WHITE)
+    self.rect.x = pygame.display.get_surface().get_width() / 2 - 15 / 2
+    self.rect.y = pygame.display.get_surface().get_height() - 47
+
 class Player(pygame.sprite.Sprite):
-  """ This class is the bar at the bottom of the screen that the player controls"""
+  """ This class is the bar at the bottom of the screen that the player controls """
   def __init__(self):
     super(Player, self).__init__()
-    self.height = 15
+    self.height = 10
     self.width = 100
     self.image = pygame.Surface([self.width, self.height])
     self.image.fill(WHITE)
@@ -35,14 +47,18 @@ class Player(pygame.sprite.Sprite):
     self.rect.y = self.screen_height - 30
 
 
+clock = pygame.time.Clock()
 # Sprite group for rectangles
 rects = pygame.sprite.Group()
-
+# Initialize player
 player = Player()
+# Initialize ball
+ball = Ball()
 
 # Group to render all sprites
 allsprites = pygame.sprite.Group()
 allsprites.add(player)
+allsprites.add(ball)
 
 # Create the rectangles to be rendered
 for row in range(16):
@@ -57,6 +73,10 @@ for row in range(16):
 def main():
 
   while 1:
+    
+    if ball.rect.y == 0:
+      ball.rect.y += 0.5
+
     for event in pygame.event.get():
       if event.type == pygame.QUIT: sys.exit()
 
