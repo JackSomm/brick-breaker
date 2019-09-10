@@ -1,4 +1,4 @@
-import sys, pygame, math
+import pygame, math
 pygame.init()
 
 RED = 255, 0, 0
@@ -7,8 +7,8 @@ RECT_HEIGHT = 15
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
 SCREEN = pygame.display.set_mode([800, 600])
-SPEED = [1, 1]
-top = 1
+SPEED = 1
+top = 25
 
 class Rect(pygame.sprite.Sprite):
   """ This class is the boxes that need to be destroyed in order to win """
@@ -84,9 +84,9 @@ class Player(pygame.sprite.Sprite):
 
   def update(self):
     if pygame.key.get_pressed()[pygame.K_LEFT] and self.rect.x != 0:
-      self.rect.x -= SPEED[0]
+      self.rect.x -= SPEED
     if pygame.key.get_pressed()[pygame.K_RIGHT] and self.rect.x != 800 - self.width:
-     self.rect.x += SPEED[0]  
+      self.rect.x += SPEED
 
 
 # Sprite group for rectangles
@@ -108,6 +108,8 @@ allsprites.add(ball)
 # Font for game messages
 font = pygame.font.Font(None, 36)
 
+score = 0
+
 # Create the rectangles to be rendered
 for row in range(16):
   for column in range(32):
@@ -121,7 +123,7 @@ game_over = False
 while 1:
 
   SCREEN.fill(BLACK)
-  
+
   for event in pygame.event.get():
     if event.type == pygame.QUIT: sys.exit()
 
@@ -155,6 +157,11 @@ while 1:
   # Increase speed of ball as more rects get hit for difficulty
   for rect in dead_rects:
     ball.speed += 0.001
+    score += 2
+
+  score_text = font.render("Score: {0}".format(score), True, WHITE)
+  score_pos = [1, 1]
+  SCREEN.blit(score_text, score_pos)
 
   allsprites.draw(SCREEN)
   pygame.display.flip()
