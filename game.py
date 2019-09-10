@@ -6,6 +6,8 @@ RECT_WIDTH = 23
 RECT_HEIGHT = 15
 BLACK = 0, 0, 0
 WHITE = 255, 255, 255
+GREEN = 0, 80, 40
+RED = 180, 0, 0
 SCREEN = pygame.display.set_mode([800, 600])
 SPEED = 1
 top = 25
@@ -89,6 +91,38 @@ class Player(pygame.sprite.Sprite):
       self.rect.x += SPEED
 
 
+def game_intro():
+  intro = True
+
+  while intro:
+    for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+        pygame.quit()
+        quit()
+
+    SCREEN.fill(BLACK)
+    large_text = pygame.font.Font(None, 100)
+    text = large_text.render("Brick Breaker", True, WHITE)
+    text_width, text_height = large_text.size('Brick Breaker')
+    text_pos = [(400 - text_width/2), (300 - text_height)]
+    SCREEN.blit(text, text_pos)
+
+    start_button = pygame.draw.rect(SCREEN, GREEN, (270, 370, 120, 40))
+    quit_button = pygame.draw.rect(SCREEN, RED, (420, 370, 120, 40))
+
+    sm_text = pygame.font.Font(None, 30)
+
+    start_text = sm_text.render("Start", True, WHITE)
+    quit_text = sm_text.render("Quit", True, WHITE)
+    start_text_pos = [304, 382]
+    SCREEN.blit(start_text, start_text_pos)
+
+    quit_text = sm_text.render("Quit", True, WHITE)
+    quit_text_pos = [456, 382]
+    SCREEN.blit(quit_text, quit_text_pos)
+
+    pygame.display.update()
+
 # Sprite group for rectangles
 rects = pygame.sprite.Group()
 
@@ -118,9 +152,11 @@ for row in range(16):
     allsprites.add(rect)
   top += RECT_HEIGHT + 2
 
-game_over = False
+game_over = True
 
-while 1:
+game_intro()
+
+while not game_over:
 
   SCREEN.fill(BLACK)
 
