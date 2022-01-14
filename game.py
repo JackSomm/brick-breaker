@@ -13,6 +13,7 @@ BRIGHT_RED = 200, 0, 0
 SCREEN = pygame.display.set_mode([800, 600])
 SPEED = 6
 top = 25
+font = pygame.font.Font(None, 36)
 clock = pygame.time.Clock()
 
 class Rect(pygame.sprite.Sprite):
@@ -95,11 +96,13 @@ class Player(pygame.sprite.Sprite):
 
 
 def text_objects(msg, font):
+  """ Render given text onto the screen """
   text = font.render(msg, True, WHITE)
   
   return text, text.get_rect()
 
 def button(msg, x, y, w, h, ic, ac, action=None):
+  """ Render start/quit buttons that detect click and fire a given action """
   mouse = pygame.mouse.get_pos()
   click = pygame.mouse.get_pressed()
 
@@ -121,12 +124,14 @@ def button(msg, x, y, w, h, ic, ac, action=None):
 def game_intro():
   intro = True
 
+  # first render the intro screen
   while intro:
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         pygame.quit()
         quit()
 
+    # renders title and start/quit buttons
     SCREEN.fill(BLACK)
     large_text = pygame.font.Font(None, 100)
     text = large_text.render("Brick Breaker", True, WHITE)
@@ -142,44 +147,72 @@ def game_intro():
     pygame.display.update()
     clock.tick(15)
 
-# Sprite group for rectangles
-rects = pygame.sprite.Group()
+# If game is over render "Game Over"
+def game_end(score):
+  global font
+  game_over = True
 
-# Initialize player
-player = Player()
+  SCREEN.fill(BLACK)
 
-# Initialize ball
-balls = pygame.sprite.Group()
-ball = Ball()
-balls.add(ball)
+  while game_over:
+    for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+        pygame.quit()
+        quit()
 
-# Group to render all sprites
-allsprites = pygame.sprite.Group()
-allsprites.add(player)
-allsprites.add(ball)
+    global RUNNING
+    RUNNING = False
 
-# Font for game messages
-font = pygame.font.Font(None, 36)
+    text = font.render("Game Over!", True, WHITE)
+    text_pos = text.get_rect(centerx=800/2)
+    text_pos.top = 300
+    SCREEN.blit(text, text_pos)
 
-# Create the rectangles to be rendered
-for row in range(16):
-  for column in range(32):
-    rect = Rect(column * (RECT_WIDTH + 2) + 1, top, RED)
-    rects.add(rect)
-    allsprites.add(rect)
-  top += RECT_HEIGHT + 2
+    score_text = font.render("Score: {0}".format(score), True, WHITE)
+    score_pos = [1, 1]
+    SCREEN.blit(score_text, score_pos)
+
+    button("Start", 270, 370, 120, 40, GREEN,  BRIGHT_GREEN, game_loop)
+    button("Quit", 420, 370, 120, 40, RED,  BRIGHT_RED, quit)
+
+    pygame.display.update()
+    clock.tick(15)
 
 def game_loop():
+  global top, font
   game_over = False
   score = 0
 
   RUNNING, PAUSE = True, False
   state = RUNNING
 
+  # Sprite group for rectangles
+  rects = pygame.sprite.Group()
+
+  # Initialize player
+  player = Player()
+
+  # Initialize ball
+  balls = pygame.sprite.Group()
+  ball = Ball()
+  balls.add(ball)
+
+  # Group to render all sprites
+  allsprites = pygame.sprite.Group()
+  allsprites.add(player)
+  allsprites.add(ball)
+
+  # Create the rectangles to be rendered
+  for row in range(16):
+    for column in range(32):
+      rect = Rect(column * (RECT_WIDTH + 2) + 1, top, RED)
+      rects.add(rect)
+      allsprites.add(rect)
+    top += RECT_HEIGHT + 2
+
   pause_text = font.render("Paused", True, WHITE)
 
   while not game_over:
-
     SCREEN.fill(BLACK)
 
     for event in pygame.event.get():
@@ -189,18 +222,11 @@ def game_loop():
         if event.key == pygame.K_s: state = RUNNING
 
     # While game isn't over update player and ball position
-    if not game_over and state == RUNNING:
+    if state == RUNNING:
       ball.update()
       player.update()
     elif state == PAUSE:
       SCREEN.blit(pause_text, (350, 300))
-
-    # If game is over render "Game Over"
-    if game_over:
-      text = font.render("Game Over!", True, WHITE)
-      text_pos = text.get_rect(centerx=800/2)
-      text_pos.top = 300
-      SCREEN.blit(text, text_pos)
 
     # If ball collides with player change the direction, takes into account left and right sides for diagonal movement
     if pygame.sprite.spritecollide(player, balls, False):
@@ -229,6 +255,10 @@ def game_loop():
     allsprites.draw(SCREEN)
     pygame.display.flip()
     clock.tick(60)
+  
+  if game_over:
+    top = 25
+    game_end(score)
 
 game_intro()
 game_loop()
