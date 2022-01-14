@@ -163,17 +163,20 @@ def game_end(score):
     global RUNNING
     RUNNING = False
 
-    text = font.render("Game Over!", True, WHITE)
+    large_text = pygame.font.Font(None, 100)
+
+    text = large_text.render("Game Over!", True, WHITE)
     text_pos = text.get_rect(centerx=800/2)
-    text_pos.top = 300
+    text_pos.top = 250
     SCREEN.blit(text, text_pos)
 
-    score_text = font.render("Score: {0}".format(score), True, WHITE)
-    score_pos = [1, 1]
+    score_text = large_text.render("Score: {0}".format(score), True, WHITE)
+    score_pos = text.get_rect(centerx=930/2)
+    score_pos.top = 100
     SCREEN.blit(score_text, score_pos)
 
-    button("Start", 270, 370, 120, 40, GREEN,  BRIGHT_GREEN, game_loop)
-    button("Quit", 420, 370, 120, 40, RED,  BRIGHT_RED, quit)
+    button("Start", 270, 390, 120, 40, GREEN,  BRIGHT_GREEN, game_loop)
+    button("Quit", 420, 390, 120, 40, RED,  BRIGHT_RED, quit)
 
     pygame.display.update()
     clock.tick(15)
